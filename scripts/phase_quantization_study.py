@@ -1,7 +1,7 @@
 """
 Quick phase-quantisation sensitivity study.
 
-Question (Kadir hoca, 19.04.2026): a phase set p1 that focuses at a given
+Question (advisor, 19.04.2026): a phase set p1 that focuses at a given
 point is quantised element-wise to the nearest 10 degrees
 (p1_q[k] = round(p1[k]/10)*10). How much does the resulting focus move?
 
@@ -108,7 +108,7 @@ def main() -> None:
     )
 
     # -----------------------------------------------------------
-    # Global phase offset test (Kadir hoca, 2nd request 19.04):
+    # Global phase offset test (advisor, 2nd request 19.04):
     # add a constant +20° to ALL 256 elements and check what changes.
     #
     # Physical prediction: the time-averaged pressure |P(x)|^2 (and hence

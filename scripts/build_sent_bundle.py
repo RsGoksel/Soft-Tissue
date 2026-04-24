@@ -1,12 +1,12 @@
 """
-Assemble reports/sent/ folder with all deliverables for Gülşah Hoca and
+Assemble reports/sent/ folder with all deliverables for the advisor and
 zip it as sent.zip. Runs idempotently -- safe to re-run as new results
 come in.
 
 Contents (paths are relative to project root):
   reports/
-    sonuclar_hoca.pdf       — main results report (visuals + tables)
-    sonuclar_hoca.html      — self-contained HTML report
+    sonuclar.pdf       — main results report (visuals + tables)
+    sonuclar.html      — self-contained HTML report
     abstract_en.md          — English symposium abstract
     abstract_tr.md          — Turkish symposium abstract
   outputs/
@@ -115,7 +115,7 @@ def make_sent() -> None:
     print(f"[sent] building {SENT}")
 
     # reports
-    for rel in ("sonuclar_hoca.pdf", "sonuclar_hoca.html",
+    for rel in ("sonuclar.pdf", "sonuclar.html",
                 "abstract_en.md", "abstract_tr.md"):
         copy_if_exists(ROOT / "reports" / rel, SENT / "reports" / rel)
 
@@ -151,13 +151,13 @@ def make_sent() -> None:
     readme = [
         "# Ultrason — Gönderi Paketi",
         "",
-        "Bu klasör Gülşah Hoca'ya iletilmek üzere hazırlanmış çıktıların",
+        "Bu klasör danışmana iletilmek üzere hazırlanmış çıktıların",
         "tam setidir.",
         "",
         "## İçerik",
         "",
-        "- `reports/sonuclar_hoca.pdf` — ana sonuç raporu (gömülü görsellerle)",
-        "- `reports/sonuclar_hoca.html` — aynı raporun tarayıcı sürümü",
+        "- `reports/sonuclar.pdf` — ana sonuç raporu (gömülü görsellerle)",
+        "- `reports/sonuclar.html` — aynı raporun tarayıcı sürümü",
         "- `reports/abstract_en.md` — sempozyum için İngilizce abstract",
         "- `reports/abstract_tr.md` — sempozyum için Türkçe özet",
         "- `track_a_2d_summary.md` — 2-B ileri problem omurga karşılaştırması",

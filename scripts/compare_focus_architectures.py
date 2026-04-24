@@ -12,7 +12,7 @@ All three use base_channels=16 (~0.9M params) and share:
   - same epochs, same batch size
 
 Why: so any per-axis RMS difference between the three is attributable to
-architecture only. This is the "backbone robustness" check Hoca asked for.
+architecture only. This is the "backbone robustness" check the advisor asked for.
 
 Usage:
     python scripts/compare_focus_architectures.py --epochs 150

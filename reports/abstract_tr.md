@@ -1,6 +1,6 @@
 # Heterojen Meme Dokusunda Ultrasonla Tümör Ablasyonu Planlaması için Sinir-Operatör Vekil Modelleri
 
-**Kadir Göksel Gündüz¹, Eren [Soyad]², Gülşah [Soyad]¹**
+**Kadir Göksel Gündüz¹, [İşbirlikçi]², [Danışman]¹**
 ¹ [Kurum] — ² İstanbul Teknik Üniversitesi
 
 ---

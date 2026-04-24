@@ -54,3 +54,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Personal notes / scratch (excluded from repo)
+Claud.txt
+system_map.md
+Developments.md

@@ -1,6 +1,6 @@
 # Neural surrogate models for ultrasound-based tumour ablation planning in heterogeneous breast tissue
 
-**Kadir Göksel Gündüz¹, Eren [Surname]², Gülşah [Surname]¹**
+**Kadir Göksel Gündüz¹, [Collaborator]², [Advisor]¹**
 ¹ [Affiliation] — ² Istanbul Technical University
 
 ---

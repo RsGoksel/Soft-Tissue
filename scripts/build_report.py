@@ -1,5 +1,5 @@
 """
-Build a self-contained HTML report from reports/sonuclar_hoca.md.
+Build a self-contained HTML report from reports/sonuclar.md.
 
 Images are inlined as base64 data URIs so the output HTML is a single
 portable file. Open in a browser and Ctrl+P -> Save as PDF for a PDF
@@ -15,8 +15,8 @@ from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
-MD_PATH = ROOT / "reports" / "sonuclar_hoca.md"
-OUT_HTML = ROOT / "reports" / "sonuclar_hoca.html"
+MD_PATH = ROOT / "reports" / "sonuclar.md"
+OUT_HTML = ROOT / "reports" / "sonuclar.html"
 
 
 def image_to_data_uri(img_path: Path) -> str:

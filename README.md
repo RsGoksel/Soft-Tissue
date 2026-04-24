@@ -7,7 +7,7 @@ hızlandıran iki-kollu pipeline.
 
 > Sempozyum makalesi için hazırlanan çalışma ortak deposu. Ana
 > işbirlikçi: Eren (ITÜ) — ters problem simülatörü ve k-Wave
-> doğrulaması. Danışman: Gülşah Hoca.
+> doğrulaması. Danışman: Danışman.
 
 ---
 
@@ -23,7 +23,7 @@ hızlandıran iki-kollu pipeline.
 | Faz-kuantizasyon çalışması (5° / 10° / 15°) | ✅ 5° pipeline'a adopte edildi |
 | Isı-haritası / DSNT varyantı (nnLandmark tarzı) | ✅ Baseline ile parite (25.27 mm) |
 | Sempozyum abstract (EN + TR) | ✅ Hazır — [abstract_en.md](reports/abstract_en.md), [abstract_tr.md](reports/abstract_tr.md) |
-| Hocaya teslim paketi | ✅ `sent.zip` (5.2 MB, 21 dosya) |
+| Teslim paketi | ✅ `sent.zip` (5.2 MB, 21 dosya) |
 | Sonraki iterasyon: transfer learning + 500 örnek | ⏳ Plan netleşti — [future_work_ai.md](reports/future_work_ai.md) |
 
 ---
@@ -153,9 +153,102 @@ yarar, transfer learning neden en büyük kazancı verir):
   son sürüm, multi-seed + heatmap DSNT rakamlarıyla güncel.
 - **Türkçe**: [`reports/abstract_tr.md`](reports/abstract_tr.md) —
   aynı içerik, Türkçe tam çeviri.
-- **Ana görsel rapor**: [`reports/sonuclar_hoca.pdf`](reports/sonuclar_hoca.pdf).
-- Hocaya teslim edilecek paket: `sent.zip` (kök dizinde,
+- **Ana görsel rapor**: [`reports/sonuclar.pdf`](reports/sonuclar.pdf).
+- Teslim edilecek paket: `sent.zip` (kök dizinde,
   `scripts/build_sent_bundle.py` tarafından yeniden üretilebilir).
+
+## Danışmanın Son Taleplerine Cevap
+
+Grup yazışmasındaki son mesajlarda dört somut talep vardı; durum
+maddeler halinde:
+
+### 1. Kapsam — sempozyumda 2D önceliğinin korunması
+
+> **Danışman [10:23, 12.04.2026]:**
+> "Sempozyum açısından 2D yeterdi diye düşünüyorum, böyle konuşmamış mıydık"
+
+Haklısınız, ana mesajı 2D üzerine kurduk. **Kol A (2-B FNO)
+kendi başına tam sonuç veren, figürleri makaleye gidecek nitelikte bir
+çalışma** (test rel-L2 **0.097**, U-Net'in 2.7 katı daha iyi). Kol B
+(3-B odak-nokta) abstract'ta **ikincil / tamamlayıcı katkı** olarak
+duruyor, çünkü Eren'in 30 örneklik veri setiyle lateral 5 mm elde
+ettik ama eksenel tarafta 500+ simülasyonu bekliyor. Kısacası paper'ın
+omurgası 2D, 3D bonus.
+
+### 2. Introduction + literatür taraması + novelty
+
+> **Danışman [10:24, 12.04.2026]:**
+> "Bence introduction kısmına şimdiden başlayın"
+> "Sizin yaptığınız işe benzer literatür varsa şimdiden öğrensek ve
+> noveltymizi ona göre kurgulasak daha iyi"
+
+Literatür taraması yapıldı. İki karşılaştırma ekseni net:
+
+- **İleri simülasyon hızlandırma (Kol A bizim konumumuz):** TUSNet
+  (Shenoy ve ark. 2022), DeepTFUS (Yıldız ve ark. 2023), Stanziola ve
+  ark. 2023. Hepsi 2-B meme dışı doku, U-Net veya FNO varyantı. Bizim
+  farkımız OpenBreastUS + 1000 örnek + üç omurgalı ablasyon.
+- **HIFU için öğrenilmiş ters problem (Kol B bizim konumumuz):**
+  Literatür görece seyrek. Klasik optimizasyon (Mendez Peñalver
+  2022) + az sayıda learning-based çalışma. Bizim farkımız 3-DOF
+  yeniden formülasyon + analitik delay-and-sum hibrit.
+
+**Novelty üç maddede kristalleşti** (abstract'ta da bu sıra):
+
+1. **OpenBreastUS'un HIFU planlamada ilk kullanımı** (orijinal yayın
+   ultrason computed tomography için).
+2. **Gauge serbestliği + faz kuantizasyonu ampirik karakterizasyonu** —
+   hem bizim regresörümüz hem klasik optimizatörler için bağımsız
+   değer taşıyor.
+3. **Örnek-verimli odak-nokta ağı + analitik hüzmelendirme hibrit
+   pipeline'ı** — gerçek zamanlı, hastaya özel planlama için yapı
+   taşı.
+
+Introduction için hazır materyal:
+[`reports/abstract_en.md`](reports/abstract_en.md) +
+[`reports/sonuclar.pdf`](reports/sonuclar.pdf).
+
+### 3. Haftasonu modeline ve sonuçlara bakma
+
+> **Danışman [21:41, 17.04.2026]:**
+> "Kadir, modele sonuçlara vs bir ara bakmak istiyorum. Haftasonu
+> müsait bir zamanın var mı?"
+
+Müsaitim, Cumartesi ve Pazar uygun. Toplantıya hazır malzemeler:
+
+- **Bu depo** — GitHub'dan doğrudan dosya dosya gezebilirsiniz
+  (figürler `outputs/` altında, scriptler `scripts/` altında).
+- **`sent.zip`** (5.2 MB, 21 dosya) — tüm figürler + abstract + multi-seed
+  tabloları + visual rapor, tek paket.
+- **[`reports/sonuclar.pdf`](reports/sonuclar.pdf)** — ana
+  görsel rapor, ekrana paylaşmaya uygun.
+- Canlı demo için eğitilmiş modeller yerel makinede hazır; istenirse
+  yeni bir girdide inference çalıştırabilirim.
+
+### 4. Sempozyum AI makalelerinde "neyi ne ölçüde tartışmışlar"
+
+> **Danışman [21:44, 17.04.2026]:**
+> "Kadir, bu sempozyumda yayınlanan yapay zeka maklelerine bakmanı
+> istiyorum. Neyi ne ölçüde tartışmışlar bilelim."
+
+İki paralel incelememi yaptım:
+
+- **Mimari / yöntem tarafı** — hangi modeller gerçekten işimize yarar,
+  hangileri moda ama uygun değil (YOLO örneği), cutting-edge rakiplerin
+  (Transolver, GNOT, SwinUNETR, U-Mamba, SAM-Med3D) bizim problemimize
+  ne getireceği, ve **en büyük kazancın mimariden değil transfer
+  learning'den** gelmesinin sayısal gerekçesi:
+  ➜ [`reports/future_work_ai.md`](reports/future_work_ai.md)
+- **Sempozyumun önceki yıllarında yayımlanan AI makalelerinin
+  incelemesi** — neyi ne ölçüde tartıştıkları, bizim üç-maddelik
+  novelty listemizin hangi boşluğu kapattığı tarafı **önümüzdeki hafta
+  tamamlanacak**. Bu, introduction taslağıyla eş zamanlı yürütülecek
+  kısım; şu an Kol B'nin ampirik tablosu oturmadan kurgu yapmamak
+  için bilinçli olarak sona bıraktım.
+
+Geri bildirim ve düzeltme olursa toplantıda not alırım.
+
+---
 
 ## Teknik Detaylar
 
@@ -170,7 +263,7 @@ ve reproduksiyon adımları) ayrı bir dosyada:
 
 - [`reports/abstract_en.md`](reports/abstract_en.md) — sempozyum abstract (İngilizce)
 - [`reports/abstract_tr.md`](reports/abstract_tr.md) — sempozyum abstract (Türkçe)
-- [`reports/sonuclar_hoca.pdf`](reports/sonuclar_hoca.pdf) — ana görsel rapor
+- [`reports/sonuclar.pdf`](reports/sonuclar.pdf) — ana görsel rapor
 - [`reports/future_work_ai.md`](reports/future_work_ai.md) — cutting-edge mimari yol haritası
 - [`outputs/focus_arch_compare/multi_seed_summary.md`](outputs/focus_arch_compare/multi_seed_summary.md) — multi-seed ablasyon ham tablo
 - [`outputs/focus_arch_compare/summary.md`](outputs/focus_arch_compare/summary.md) — Kol B konsolide özet
