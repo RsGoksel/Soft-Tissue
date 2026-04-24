@@ -1,0 +1,17 @@
+[heatmap] arch=heatmap  device=cuda  seed=0
+[heatmap] train=22 val=4 test=4
+[heatmap] affine fit train-voxel RMS: 16.12 voxels (spacing 2 mm -> 32.2 mm). Good <6 voxels (<12 mm), poor >15 voxels.
+[heatmap] fit perm=[1, 0, 2]  slope=[569.6802978515625, 429.1275939941406, 438.5679626464844]  offset=[61.54587936401367, 64.42738342285156, 41.951454162597656]
+[heatmap] volume shape (126, 128, 128)  sigma=6.0 voxels
+[heatmap] heatmap params: 1.461M
+  ep  10/80  train 39.7890  val loss 83.9637  val RMS 35.02 mm  (X 19.28, Y 11.85, Z 26.72)
+  ep  20/80  train 33.1429  val loss 86.5093  val RMS 36.60 mm  (X 2.53, Y 3.57, Z 36.34)
+  ep  30/80  train 22.4421  val loss 82.2277  val RMS 35.21 mm  (X 10.52, Y 8.22, Z 32.58)
+  ep  40/80  train 2.6748  val loss 99.9282  val RMS 39.37 mm  (X 2.89, Y 3.56, Z 39.10)
+  ep  50/80  train 1.0759  val loss 58.7528  val RMS 29.97 mm  (X 6.53, Y 5.14, Z 28.80)
+  ep  60/80  train 1.1948  val loss 48.8564  val RMS 27.34 mm  (X 6.06, Y 4.47, Z 26.29)
+  ep  70/80  train 0.3870  val loss 66.1642  val RMS 31.88 mm  (X 6.24, Y 4.76, Z 30.90)
+  ep  80/80  train 0.2983  val loss 62.7425  val RMS 31.07 mm  (X 5.95, Y 4.33, Z 30.19)
+
+[heatmap] TEST  loss 43.3464  RMS 25.27 mm  (X 4.80, Y 7.04, Z 23.79)
+[heatmap] saved to C:\Users\gokss\OneDrive\Masaüstü\Ultrason\outputs\focus_heatmap

@@ -1,0 +1,5 @@
+{
+  "model": "convnext",
+  "test_lploss": 0.9899367345006842,
+  "params_M": 1.870817
+}

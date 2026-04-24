@@ -1,0 +1,37 @@
+[compare] device = cuda
+[compare] splits: train=22 val=4 test=4
+
+=== training cnn ===
+  [cnn] ep  25/150  val MSE 1.3959  val RMS 55.36 mm  (X 7.80, Y 7.63, Z 54.27)
+  [cnn] ep  50/150  val MSE 0.6560  val RMS 28.71 mm  (X 10.11, Y 11.83, Z 24.13)
+  [cnn] ep  75/150  val MSE 0.7296  val RMS 35.69 mm  (X 11.60, Y 3.52, Z 33.57)
+  [cnn] ep 100/150  val MSE 0.6843  val RMS 33.19 mm  (X 10.02, Y 8.61, Z 30.45)
+  [cnn] ep 125/150  val MSE 0.6452  val RMS 36.09 mm  (X 8.32, Y 3.74, Z 34.92)
+  [cnn] ep 150/150  val MSE 0.5755  val RMS 32.84 mm  (X 8.61, Y 4.96, Z 31.30)
+
+=== training resnet ===
+  [resnet] ep  25/150  val MSE 0.5876  val RMS 30.47 mm  (X 9.84, Y 7.51, Z 27.84)
+  [resnet] ep  50/150  val MSE 1.0720  val RMS 29.53 mm  (X 21.48, Y 4.86, Z 19.68)
+  [resnet] ep  75/150  val MSE 0.4046  val RMS 28.23 mm  (X 6.02, Y 4.91, Z 27.14)
+  [resnet] ep 100/150  val MSE 0.5069  val RMS 32.80 mm  (X 5.64, Y 4.65, Z 31.97)
+  [resnet] ep 125/150  val MSE 0.5836  val RMS 35.66 mm  (X 5.45, Y 4.71, Z 34.93)
+  [resnet] ep 150/150  val MSE 0.6403  val RMS 37.58 mm  (X 5.90, Y 4.02, Z 36.89)
+
+=== training unet ===
+  [unet] ep  25/150  val MSE 2.9738  val RMS 55.50 mm  (X 22.98, Y 27.79, Z 42.19)
+  [unet] ep  50/150  val MSE 0.6074  val RMS 26.52 mm  (X 9.90, Y 12.06, Z 21.44)
+  [unet] ep  75/150  val MSE 2.9812  val RMS 82.10 mm  (X 6.86, Y 12.73, Z 80.82)
+  [unet] ep 100/150  val MSE 0.4083  val RMS 28.80 mm  (X 4.18, Y 6.29, Z 27.79)
+  [unet] ep 125/150  val MSE 0.7711  val RMS 41.51 mm  (X 4.05, Y 6.59, Z 40.78)
+  [unet] ep 150/150  val MSE 0.9088  val RMS 45.58 mm  (X 5.69, Y 4.45, Z 45.00)
+
+================================================================================
+FocusPointNet architecture comparison — test split (4 samples)
+================================================================================
+arch        params   test RMS   X (mm)   Y (mm)   Z (mm)   wall (s)
+--------------------------------------------------------------------------------
+cnn        0.888M     29.34    2.07    7.69   28.24     395.8
+resnet     0.906M     34.86    2.51    1.01   34.76     846.3
+unet       0.895M     42.26    2.60    2.59   42.10    1318.4
+
+[compare] saved C:\Users\gokss\OneDrive\Masaüstü\Ultrason\outputs\focus_arch_compare\results.json
