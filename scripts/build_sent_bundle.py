@@ -7,8 +7,8 @@ Contents (paths are relative to project root):
   reports/
     sonuclar.pdf       — main results report (visuals + tables)
     sonuclar.html      — self-contained HTML report
-    abstract_en.md          — English symposium abstract
-    abstract_tr.md          — Turkish symposium abstract
+    abstract_en.pdf          — English symposium abstract
+    abstract_tr.pdf          — Turkish symposium abstract
   outputs/
     comparison_1k.png       — FNO vs U-Net 5-panel figure (track A)
     fno_1k/test_sample.png
@@ -116,7 +116,7 @@ def make_sent() -> None:
 
     # reports
     for rel in ("sonuclar.pdf", "sonuclar.html",
-                "abstract_en.md", "abstract_tr.md"):
+                "abstract_en.pdf", "abstract_tr.pdf"):
         copy_if_exists(ROOT / "reports" / rel, SENT / "reports" / rel)
 
     # 2D track figures
@@ -158,8 +158,8 @@ def make_sent() -> None:
         "",
         "- `reports/sonuclar.pdf` — ana sonuç raporu (gömülü görsellerle)",
         "- `reports/sonuclar.html` — aynı raporun tarayıcı sürümü",
-        "- `reports/abstract_en.md` — sempozyum için İngilizce abstract",
-        "- `reports/abstract_tr.md` — sempozyum için Türkçe özet",
+        "- `reports/abstract_en.pdf` — sempozyum için İngilizce abstract",
+        "- `reports/abstract_tr.pdf` — sempozyum için Türkçe özet",
         "- `track_a_2d_summary.md` — 2-B ileri problem omurga karşılaştırması",
         "- `outputs/` — model figürleri, mimari diyagramları, karşılaştırma tabloları",
         "",

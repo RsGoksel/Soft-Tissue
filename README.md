@@ -22,7 +22,7 @@ hızlandıran iki-kollu pipeline.
 | Gauge simetrisi üçlü doğrulaması | ✅ Analitik + sentetik + k-Wave (Eren) |
 | Faz-kuantizasyon çalışması (5° / 10° / 15°) | ✅ 5° pipeline'a adopte edildi |
 | Isı-haritası / DSNT varyantı (nnLandmark tarzı) | ✅ Baseline ile parite (25.27 mm) |
-| Sempozyum abstract (EN + TR) | ✅ Hazır — [abstract_en.md](reports/abstract_en.md), [abstract_tr.md](reports/abstract_tr.md) |
+| Sempozyum abstract (EN + TR) | ✅ Hazır — [abstract_en.pdf](reports/abstract_en.pdf), [abstract_tr.pdf](reports/abstract_tr.pdf) |
 | Teslim paketi | ✅ `sent.zip` (5.2 MB, 21 dosya) |
 | Sonraki iterasyon: transfer learning + 500 örnek | ⏳ Plan netleşti — [future_work_ai.md](reports/future_work_ai.md) |
 
@@ -149,9 +149,9 @@ yarar, transfer learning neden en büyük kazancı verir):
 
 ## Sempozyum Abstract Durumu
 
-- **İngilizce**: [`reports/abstract_en.md`](reports/abstract_en.md) —
+- **İngilizce**: [`reports/abstract_en.pdf`](reports/abstract_en.pdf) —
   son sürüm, multi-seed + heatmap DSNT rakamlarıyla güncel.
-- **Türkçe**: [`reports/abstract_tr.md`](reports/abstract_tr.md) —
+- **Türkçe**: [`reports/abstract_tr.pdf`](reports/abstract_tr.pdf) —
   aynı içerik, Türkçe tam çeviri.
 - **Ana görsel rapor**: [`reports/sonuclar.pdf`](reports/sonuclar.pdf).
 - Teslim edilecek paket: `sent.zip` (kök dizinde,
@@ -205,7 +205,7 @@ Literatür taraması yapıldı. İki karşılaştırma ekseni net:
    taşı.
 
 Introduction için hazır materyal:
-[`reports/abstract_en.md`](reports/abstract_en.md) +
+[`reports/abstract_en.pdf`](reports/abstract_en.pdf) +
 [`reports/sonuclar.pdf`](reports/sonuclar.pdf).
 
 ### 3. Haftasonu modeline ve sonuçlara bakma
@@ -261,8 +261,8 @@ ve reproduksiyon adımları) ayrı bir dosyada:
 
 İlgili dosyalar:
 
-- [`reports/abstract_en.md`](reports/abstract_en.md) — sempozyum abstract (İngilizce)
-- [`reports/abstract_tr.md`](reports/abstract_tr.md) — sempozyum abstract (Türkçe)
+- [`reports/abstract_en.pdf`](reports/abstract_en.pdf) — sempozyum abstract (İngilizce)
+- [`reports/abstract_tr.pdf`](reports/abstract_tr.pdf) — sempozyum abstract (Türkçe)
 - [`reports/sonuclar.pdf`](reports/sonuclar.pdf) — ana görsel rapor
 - [`reports/future_work_ai.md`](reports/future_work_ai.md) — cutting-edge mimari yol haritası
 - [`outputs/focus_arch_compare/multi_seed_summary.md`](outputs/focus_arch_compare/multi_seed_summary.md) — multi-seed ablasyon ham tablo
