@@ -5,9 +5,9 @@ planlamasının** iki pahalı hesaplama adımını (ileri basınç alanı
 tahmini + ters faz sentezi) sinir operatörü + kompakt 3-B CNN ile
 hızlandıran iki-kollu pipeline.
 
-> Sempozyum makalesi için hazırlanan çalışma ortak deposu. Ana
-> işbirlikçi: Eren (ITÜ) — ters problem simülatörü ve k-Wave
-> doğrulaması. Danışman: Danışman.
+> Sempozyum makalesi için hazırlanan çalışma deposudur. Ters problem
+> simülatörü ve k-Wave doğrulamaları, ITÜ'deki işbirlikçi ekiple
+> ortak olarak yürütülmektedir.
 
 ---
 
@@ -28,28 +28,52 @@ hızlandıran iki-kollu pipeline.
 
 ---
 
+## Pipeline — İki Kol Akışı
+
+```mermaid
+flowchart LR
+    subgraph KA["Kol A · İleri (Fizik Hızlandırma)"]
+        direction TB
+        T["Doku haritası<br/>(c, ρ, α)<br/>316 × 256"] --> F["FNO2d<br/>~10.3 M params"]
+        F --> P["Basınç alanı<br/>p_max"]
+    end
+
+    subgraph KB["Kol B · Ters (Faz Planlama)"]
+        direction TB
+        Q["Isı hacmi Q<br/>126 × 128 × 128"] --> FP["FocusPointNet<br/>~0.9 M params"]
+        FP --> C["Odak koord.<br/>(x, y, z)"]
+        C --> DAS["Analitik<br/>Delay-and-Sum"]
+        DAS --> PH["256 transdüser<br/>faz vektörü"]
+    end
+
+    classDef model fill:#e8f1fb,stroke:#1f3a5f,stroke-width:1px;
+    classDef analytic fill:#fff3e0,stroke:#ef6c00,stroke-width:1px;
+    class F,FP model;
+    class DAS analytic;
+```
+
+**Mavi bloklar** öğrenilmiş modeller, **turuncu blok** bilinen kapalı-form
+fizik. Gauge serbestliğini ayrı bir öğrenme hedefi yapmak yerine Kol B'yi
+3 serbestlik derecesine (x, y, z) indirgeyip fazı analitik hüzmelendirmeye
+bıraktık — detayları [Ne Yaptık?](#ne-yaptık) bölümünde.
+
+---
+
 ## Ne Yaptık?
 
 İki koldan ilerledik (forward fizik hızlandırma + inverse faz planlama).
 Adım adım:
 
-1. **İlk denediğimiz yaklaşım (256 faz doğrudan tahmini) öğrenmedi.**
-   Modele "istediğim hedef bu, bana 256 elemanın faz açılarını ver"
-   dediğimde loss düşmeyi bırakıyordu. Biraz kurcalayınca iki yapısal
-   sebep ortaya çıktı:
-   - **Aynı hedef için çok farklı faz setleri aynı işi yapıyor** —
-     verideki en yakın komşu hedeflere ait faz vektörlerinin benzerliği
-     **0.002 ± 0.043** (gürültüden ayırt edilemez). Bu tek-çoğa bir
-     eşleme; tek bir deterministik ağ bunu fit edemez.
-   - **Tüm fazlara sabit bir açı (meselâ +20°) eklenince odak
-     kımıldamıyor** — sistemin sürekli bir faz-ofset serbestliği var
-     (sinyal işleme literatüründe bu bir *gauge* / global faz
-     belirsizliği). Ağın sonsuz eşdeğer çıktıdan birini "seçmesi"
-     gerekiyor ki kararsız.
+1. **İlk denenen "hedef → 256 faz" doğrudan regresyonu öğrenmedi.**
+   Tanılama iki yapısal sebebi ortaya koydu:
 
-   Bu iki patoloji eğitim eğrisine bakarak görülmüyor (loss biraz
-   düşüyor sonra plato = "belki modeli biraz büyütsem" izlenimi). Ancak
-   tanılama metrikleri yazdıktan sonra net oldu.
+   | Patoloji | Ampirik imza |
+   |---|---|
+   | **Tek-çoğa eşleme** — aynı hedefi üreten çok sayıda faz seti var | En yakın komşu faz vektörlerinin dairesel-kosinüs benzerliği: **0.002 ± 0.043** (gürültü düzeyinde) |
+   | **Gauge / global faz belirsizliği** — tüm fazlara sabit eklenince odak kımıldamıyor | +20° offset: odak kayması **0 mm**, yoğunluk değişimi **<%1** |
+
+   Her ikisi de eğitim eğrisine bakıp anlaşılamıyor (loss hafif düşüyor
+   → plato → "modeli büyütsem?"); tanı metrikleri yazıldığında netleşti.
 
 2. **Formülasyonu değiştirdik — pipeline'ı ikiye böldük.** Fiziğin
    sağlam olduğu yerde fiziği koruduk, AI'ı yalnızca somut kazanç
@@ -157,96 +181,82 @@ yarar, transfer learning neden en büyük kazancı verir):
 - Teslim edilecek paket: `sent.zip` (kök dizinde,
   `scripts/build_sent_bundle.py` tarafından yeniden üretilebilir).
 
-## Danışmanın Son Taleplerine Cevap
+## Sıkça Sorulan Sorular
 
-Grup yazışmasındaki son mesajlarda dört somut talep vardı; durum
-maddeler halinde:
+Proje sürecinde ortaya çıkan dört merkezi soru ve güncel cevapları.
 
-### 1. Kapsam — sempozyumda 2D önceliğinin korunması
+---
 
-> **Danışman [10:23, 12.04.2026]:**
-> "Sempozyum açısından 2D yeterdi diye düşünüyorum, böyle konuşmamış mıydık"
+### S1 · Sempozyum kapsamı için 2-B ileri problem tek başına yeterli mi, yoksa 3-B ters problem de gerekli mi?
 
-Haklısınız, ana mesajı 2D üzerine kurduk. **Kol A (2-B FNO)
-kendi başına tam sonuç veren, figürleri makaleye gidecek nitelikte bir
-çalışma** (test rel-L2 **0.097**, U-Net'in 2.7 katı daha iyi). Kol B
-(3-B odak-nokta) abstract'ta **ikincil / tamamlayıcı katkı** olarak
-duruyor, çünkü Eren'in 30 örneklik veri setiyle lateral 5 mm elde
-ettik ama eksenel tarafta 500+ simülasyonu bekliyor. Kısacası paper'ın
-omurgası 2D, 3D bonus.
+**Kol A (2-B FNO) kendi başına yayıma uygun, tamamlanmış bir
+sonuçtur.** Test rel-L2 **0.097**, U-Net'in 2.7 katı daha iyi; figürler
+makaleye doğrudan girecek kalitede. Bu nedenle abstract'ın *ana
+omurgası* Kol A üzerine kuruldu.
 
-### 2. Introduction + literatür taraması + novelty
+Kol B (3-B odak-nokta regresyonu) abstract'ta **tamamlayıcı / ikincil
+katkı** olarak konumlandı. 30 örnekle **lateral 5 mm** (focal spot
+içi) elde edildi, ancak eksenel eksende veri kısıtı baskın — bu kolun
+tamamlanması 500+ simülasyonluk genişletilmiş veri setini bekliyor.
+Sempozyum versiyonu için oran: **%70 Kol A, %30 Kol B**.
 
-> **Danışman [10:24, 12.04.2026]:**
-> "Bence introduction kısmına şimdiden başlayın"
-> "Sizin yaptığınız işe benzer literatür varsa şimdiden öğrensek ve
-> noveltymizi ona göre kurgulasak daha iyi"
+---
 
-Literatür taraması yapıldı. İki karşılaştırma ekseni net:
+### S2 · Benzer alandaki literatür taraması yapıldı mı? Makalenin *novelty* ekseni nasıl kurgulanıyor?
 
-- **İleri simülasyon hızlandırma (Kol A bizim konumumuz):** TUSNet
-  (Shenoy ve ark. 2022), DeepTFUS (Yıldız ve ark. 2023), Stanziola ve
-  ark. 2023. Hepsi 2-B meme dışı doku, U-Net veya FNO varyantı. Bizim
-  farkımız OpenBreastUS + 1000 örnek + üç omurgalı ablasyon.
-- **HIFU için öğrenilmiş ters problem (Kol B bizim konumumuz):**
-  Literatür görece seyrek. Klasik optimizasyon (Mendez Peñalver
-  2022) + az sayıda learning-based çalışma. Bizim farkımız 3-DOF
-  yeniden formülasyon + analitik delay-and-sum hibrit.
+İki karşılaştırma ekseni netleşti:
 
-**Novelty üç maddede kristalleşti** (abstract'ta da bu sıra):
+| Eksen | Öne çıkan literatür | Bizim farkımız |
+|---|---|---|
+| **İleri simülasyon hızlandırma** | TUSNet (Shenoy 2022), DeepTFUS (Yıldız 2023), Stanziola (2023) | OpenBreastUS + 1 000 örnek + üç omurgalı ablasyon |
+| **HIFU ters problem (öğrenilmiş)** | Mendez Peñalver 2022 (klasik opt.), birkaç learning-based çalışma | 3-DOF yeniden formülasyon + analitik delay-and-sum hibrit |
 
-1. **OpenBreastUS'un HIFU planlamada ilk kullanımı** (orijinal yayın
-   ultrason computed tomography için).
+**Novelty üç maddede** (abstract'ta aynı sırada):
+
+1. **OpenBreastUS'un HIFU planlamada ilk kullanımı** — orijinal yayın
+   ultrason computed tomography içindi.
 2. **Gauge serbestliği + faz kuantizasyonu ampirik karakterizasyonu** —
-   hem bizim regresörümüz hem klasik optimizatörler için bağımsız
-   değer taşıyor.
+   bizim regresörümüzden bağımsız olarak klasik faz optimizatörleri
+   için de değerli.
 3. **Örnek-verimli odak-nokta ağı + analitik hüzmelendirme hibrit
    pipeline'ı** — gerçek zamanlı, hastaya özel planlama için yapı
    taşı.
 
-Introduction için hazır materyal:
-[`reports/abstract_en.pdf`](reports/abstract_en.pdf) +
+Introduction için kullanılabilecek hazır materyal:
+[`reports/abstract_en.pdf`](reports/abstract_en.pdf),
 [`reports/sonuclar.pdf`](reports/sonuclar.pdf).
 
-### 3. Haftasonu modeline ve sonuçlara bakma
+---
 
-> **Danışman [21:41, 17.04.2026]:**
-> "Kadir, modele sonuçlara vs bir ara bakmak istiyorum. Haftasonu
-> müsait bir zamanın var mı?"
+### S3 · Proje sonuçlarını birlikte gözden geçirmek için ne tür materyaller hazır?
 
-Müsaitim, Cumartesi ve Pazar uygun. Toplantıya hazır malzemeler:
+| Kanal | İçerik | Boyut |
+|---|---|---|
+| **Bu depo** | Tüm kod + figürler + JSON sonuçları | ~10 MB |
+| **`sent.zip`** | Tek paket: figürler, tablolar, abstract, görsel rapor | 5.2 MB, 21 dosya |
+| **[`reports/sonuclar.pdf`](reports/sonuclar.pdf)** | Ekran paylaşımı için uygun görsel rapor | 1.5 MB |
+| **[`reports/abstract_en.pdf`](reports/abstract_en.pdf)** / [`abstract_tr.pdf`](reports/abstract_tr.pdf) | Sempozyum abstract'ı (EN + TR) | ~100 KB |
+| **Canlı inference** | Eğitilmiş modeller yerel makinede hazır; yeni girdide çıktı üretilebilir | — |
 
-- **Bu depo** — GitHub'dan doğrudan dosya dosya gezebilirsiniz
-  (figürler `outputs/` altında, scriptler `scripts/` altında).
-- **`sent.zip`** (5.2 MB, 21 dosya) — tüm figürler + abstract + multi-seed
-  tabloları + visual rapor, tek paket.
-- **[`reports/sonuclar.pdf`](reports/sonuclar.pdf)** — ana
-  görsel rapor, ekrana paylaşmaya uygun.
-- Canlı demo için eğitilmiş modeller yerel makinede hazır; istenirse
-  yeni bir girdide inference çalıştırabilirim.
+Toplantı için Cumartesi ve Pazar uygunluğum var.
 
-### 4. Sempozyum AI makalelerinde "neyi ne ölçüde tartışmışlar"
+---
 
-> **Danışman [21:44, 17.04.2026]:**
-> "Kadir, bu sempozyumda yayınlanan yapay zeka maklelerine bakmanı
-> istiyorum. Neyi ne ölçüde tartışmışlar bilelim."
+### S4 · Sempozyum alanındaki yapay zeka makaleleri ne ölçüde incelendi? SOTA mimariler bu çalışmaya nasıl konumlanıyor?
 
-İki paralel incelememi yaptım:
+İnceleme iki koldan yürütüldü:
 
-- **Mimari / yöntem tarafı** — hangi modeller gerçekten işimize yarar,
-  hangileri moda ama uygun değil (YOLO örneği), cutting-edge rakiplerin
-  (Transolver, GNOT, SwinUNETR, U-Mamba, SAM-Med3D) bizim problemimize
-  ne getireceği, ve **en büyük kazancın mimariden değil transfer
-  learning'den** gelmesinin sayısal gerekçesi:
-  ➜ [`reports/future_work_ai.md`](reports/future_work_ai.md)
-- **Sempozyumun önceki yıllarında yayımlanan AI makalelerinin
-  incelemesi** — neyi ne ölçüde tartıştıkları, bizim üç-maddelik
-  novelty listemizin hangi boşluğu kapattığı tarafı **önümüzdeki hafta
-  tamamlanacak**. Bu, introduction taslağıyla eş zamanlı yürütülecek
-  kısım; şu an Kol B'nin ampirik tablosu oturmadan kurgu yapmamak
-  için bilinçli olarak sona bıraktım.
-
-Geri bildirim ve düzeltme olursa toplantıda not alırım.
+- **Mimari / yöntem analizi — ✅ tamamlandı.** Hangi modeller bu göreve
+  uygun, hangileri moda ama uyumsuz (YOLO vakası), cutting-edge
+  rakiplerin (Transolver, GNOT, SwinUNETR, U-Mamba, SAM-Med3D) beklenen
+  katkısı ve bizim 30-örnek rejiminde **en büyük kazancın mimariden
+  değil transfer learning'den** geleceğinin sayısal gerekçesi
+  ➜ [`reports/future_work_ai.md`](reports/future_work_ai.md).
+- **Sempozyumun geçmiş yıl AI makaleleri incelemesi — ⏳ devam ediyor.**
+  Neyi ne derinlikte tartışmışlar, üç-maddelik novelty listemizin hangi
+  boşluğu kapattığı tarafı introduction taslağıyla eş zamanlı
+  tamamlanacak. Kol B ampirik tablosu oturduğundan bu aşamada başlaması
+  anlamlı hale geldi.
 
 ---
 
