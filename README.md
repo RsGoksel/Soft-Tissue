@@ -30,22 +30,70 @@ hızlandıran iki-kollu pipeline.
 
 ## Ne Yaptık?
 
-Kısaca:
+İki koldan ilerledik (forward fizik hızlandırma + inverse faz planlama).
+Adım adım:
 
-1. **İlk yaklaşım (256-DOF faz regresyonu) çöktü.** Sebep yapısaldı —
-   bir sonraki bölüme bakınız. Bu **negatif bulgu** pipeline'ın doğru
-   yönünü belirledi.
-2. **İki-kol pivotu yaptık:** Kol A ileri fiziği hızlandırır (FNO),
-   Kol B ters problemi üç serbestlik dereceye (x, y, z) indirger —
-   gauge simetrisi ve tek-çoğa patolojileri ortadan kalkar.
-3. **Mimari karşılaştırmaları yaptık** (Kol A'da üç omurga, Kol B'de
-   beş omurga) + **çok-seed'li istatistiksel ablasyon** + **ısı-haritası
-   DSNT denemesi** (nnLandmark / H3DE-Net tarzı). Sonuçlar aşağıda.
-4. **Gauge simetrisini üçlü yoldan doğruladık** (analitik + sentetik
-   en-küçük-kareler + Eren'in k-Wave doğrulaması). `+20°` offset
-   odağı kımıldatmıyor.
-5. **5° faz kuantizasyon** pipeline'a adopte edildi (akustik yoğunluk
-   hatası %0.35'in altı).
+1. **İlk denediğimiz yaklaşım (256 faz doğrudan tahmini) öğrenmedi.**
+   Modele "istediğim hedef bu, bana 256 elemanın faz açılarını ver"
+   dediğimde loss düşmeyi bırakıyordu. Biraz kurcalayınca iki yapısal
+   sebep ortaya çıktı:
+   - **Aynı hedef için çok farklı faz setleri aynı işi yapıyor** —
+     verideki en yakın komşu hedeflere ait faz vektörlerinin benzerliği
+     **0.002 ± 0.043** (gürültüden ayırt edilemez). Bu tek-çoğa bir
+     eşleme; tek bir deterministik ağ bunu fit edemez.
+   - **Tüm fazlara sabit bir açı (meselâ +20°) eklenince odak
+     kımıldamıyor** — sistemin sürekli bir faz-ofset serbestliği var
+     (sinyal işleme literatüründe bu bir *gauge* / global faz
+     belirsizliği). Ağın sonsuz eşdeğer çıktıdan birini "seçmesi"
+     gerekiyor ki kararsız.
+
+   Bu iki patoloji eğitim eğrisine bakarak görülmüyor (loss biraz
+   düşüyor sonra plato = "belki modeli biraz büyütsem" izlenimi). Ancak
+   tanılama metrikleri yazdıktan sonra net oldu.
+
+2. **Formülasyonu değiştirdik — pipeline'ı ikiye böldük.** Fiziğin
+   sağlam olduğu yerde fiziği koruduk, AI'ı yalnızca somut kazanç
+   verdiği yerde devreye aldık:
+   - **Kol A — 2-B ileri basınç alanı vekili.** Doku haritasından
+     (ses hızı / yoğunluk / soğurma) k-Wave basınç alanını FNO ile
+     tahmin ediyoruz. FNO'nun spektral (FFT temelli) yapısı dalga
+     denkleminin Green fonksiyonuna doğrudan uyuyor.
+   - **Kol B — 3-B ters odak-nokta regresyonu.** Modelden 256 faz
+     yerine **odak koordinatını (x, y, z)** istiyoruz. 3 serbestlik
+     derecesi → tek-çoğa ve gauge sorunları ortadan kalkıyor.
+     Transdüser fazları bu noktadan **analitik delay-and-sum
+     hüzmelendirme** ile üretiliyor (bilinen kapalı-form).
+
+3. **Mimari karşılaştırmalarını yaptık.** Kol A'da üç model (FNO /
+   U-Net / ConvNeXt), Kol B'de beş model (düz CNN / ResNet-3D /
+   çok-ölçekli UNet-encoder / ısı-haritası DSNT / ısı-haritası+offset).
+   Seed gürültüsünü elemek için **Kol B'yi 3 farklı seed × 3 omurga =
+   9 bağımsız koşu** ile tekrarladık (120 epoch/koşu). Ayrıca 2025
+   sempozyumlarında çıkan **nnLandmark / H3DE-Net** tarzı ısı-haritası
+   regresyonunu da ablasyona dahil ettik (detaylar aşağıda).
+
+4. **Gauge serbestliğini üç bağımsız yoldan doğruladık** — sinyal
+   işleme tarafında temel ama deneyle pekiştirmek gerekiyor:
+   - **Analitik** — delay-and-sum denkleminden türettim (`+δ` fazdan
+     faktör olarak çıkıyor, girişim desenini değiştirmiyor).
+   - **Sentetik** — 256 elemanlı düzlem dizide en-küçük-kareler
+     faz-plus-offset fit'i: `+20°` için yoğunluk değişimi **%1'in
+     altı**, odak kayması **0 mm**.
+   - **Tam-dalga k-Wave** — Eren aynı testi tam fizik simülatöründe
+     tekrar etti: yine **0 mm kayma, %1'in altı yoğunluk**.
+
+   Bu mutabakat pratik sonuç veriyor: gelecekteki her faz regresörünün
+   çıktı uzayını gauge'la bölmek gerekiyor (meselâ `phase[0] = 0`
+   sabitleyerek). Bu sahte bir serbestlik derecesini atıp optimizasyonu
+   temizliyor.
+
+5. **Faz kuantizasyonunu karakterize ettik** — gerçek transdüser
+   sürücüleri fazı ayrık adımlarla yuvarladığı için bu hassasiyet
+   kaybını ölçtük: **5° adımda akustik yoğunluk hatası %0.35**,
+   odak kayması **0.1 mm'nin altı**. Bu sınırlar içinde kaldığımız
+   için **5°'yi pipeline varsayılanı** yaptık. Gauge fix + 5°
+   kuantizasyon birlikte, hem öğrenmeye uygun hem fiziksel olarak
+   sadık bir **ayrık, gauge-sabit çıktı uzayı** veriyor.
 
 ## Ne Bulduk? (Başarım Skorları)
 
