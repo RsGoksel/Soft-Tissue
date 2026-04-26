@@ -213,4 +213,4 @@ rejimindeki *targetability ceiling*'ini belirler.
 | Faz kuantizasyon adımı? | 5° |
 | Gauge sabitleme? | `φ_0 = 0` (DAS sonrası) |
 
-Reproduksiyon adımları: [`teknik_detaylar.md` §10](teknik_detaylar.md#10-reproduksiyon).
+Reproduksiyon adımları: [`technical_details.md` §10](technical_details.md#10-reproduksiyon).

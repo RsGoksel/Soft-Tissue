@@ -218,5 +218,5 @@ açıkça konuşulması gereken yerleri:
 ---
 
 *Bu doküman fizik perspektifinden referans niteliğindedir. Sayısal
-sonuçlar ve mimari detaylar:* [`teknik_detaylar.md`](teknik_detaylar.md).
+sonuçlar ve mimari detaylar:* [`technical_details.md`](technical_details.md).
 *Mimari rotası ve transfer learning argümanı:* [`future_work_ai.md`](future_work_ai.md).
