@@ -1,0 +1,299 @@
+{
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "per_seed": [
+    {
+      "argmax": {
+        "label": "argmax(Q)",
+        "rms_total_mm": 79.39585876464844,
+        "rms_x_mm": 48.99871063232422,
+        "rms_y_mm": 32.89735412597656,
+        "rms_z_mm": 53.109256744384766,
+        "wallclock_s_per_inference": 0.0004505733333644457,
+        "test_rms_per_sample": [
+          76.5816421508789,
+          26.32528305053711,
+          50.17626953125,
+          127.04086303710938
+        ]
+      },
+      "centroid": {
+        "label": "weighted centroid",
+        "rms_total_mm": 33.983951568603516,
+        "rms_x_mm": 12.85666561126709,
+        "rms_y_mm": 15.616312980651855,
+        "rms_z_mm": 27.308347702026367,
+        "wallclock_s_per_inference": 0.04877056999976048,
+        "test_rms_per_sample": [
+          28.756637573242188,
+          21.05484390258789,
+          32.08845901489258,
+          48.163429260253906
+        ]
+      },
+      "centroid_thresh": {
+        "label": "threshold-centroid (Q>0.85*Qmax)",
+        "rms_total_mm": 80.13101196289062,
+        "rms_x_mm": 50.6341552734375,
+        "rms_y_mm": 32.637821197509766,
+        "rms_z_mm": 52.83875274658203,
+        "wallclock_s_per_inference": 0.053498620000027586,
+        "test_rms_per_sample": [
+          77.94496154785156,
+          26.94257926940918,
+          48.739158630371094,
+          128.4799346923828
+        ]
+      },
+      "parabolic": {
+        "label": "argmax + parabolic refinement",
+        "rms_total_mm": 79.35782623291016,
+        "rms_x_mm": 48.91932678222656,
+        "rms_y_mm": 32.6640510559082,
+        "rms_z_mm": 53.26935958862305,
+        "wallclock_s_per_inference": 0.0005359366667107679,
+        "test_rms_per_sample": [
+          76.75017547607422,
+          26.277320861816406,
+          50.109378814697266,
+          126.88036346435547
+        ]
+      },
+      "gaussian_blur": {
+        "label": "Gaussian-smooth + argmax (sigma=2 vox)",
+        "rms_total_mm": 64.60861206054688,
+        "rms_x_mm": 33.6927375793457,
+        "rms_y_mm": 34.1796989440918,
+        "rms_z_mm": 43.25297927856445,
+        "wallclock_s_per_inference": 0.03767851000011433,
+        "test_rms_per_sample": [
+          77.37716674804688,
+          27.39691162109375,
+          58.623226165771484,
+          80.76255798339844
+        ]
+      }
+    },
+    {
+      "argmax": {
+        "label": "argmax(Q)",
+        "rms_total_mm": 55.20703125,
+        "rms_x_mm": 30.596851348876953,
+        "rms_y_mm": 29.232646942138672,
+        "rms_z_mm": 35.455623626708984,
+        "wallclock_s_per_inference": 0.0004486499999378187,
+        "test_rms_per_sample": [
+          39.11866760253906,
+          71.00640106201172,
+          9.199688911437988,
+          74.39389038085938
+        ]
+      },
+      "centroid": {
+        "label": "weighted centroid",
+        "rms_total_mm": 29.330646514892578,
+        "rms_x_mm": 10.186278343200684,
+        "rms_y_mm": 12.343018531799316,
+        "rms_z_mm": 24.580001831054688,
+        "wallclock_s_per_inference": 0.04825384666667863,
+        "test_rms_per_sample": [
+          20.726171493530273,
+          28.539690017700195,
+          29.911279678344727,
+          36.08842468261719
+        ]
+      },
+      "centroid_thresh": {
+        "label": "threshold-centroid (Q>0.85*Qmax)",
+        "rms_total_mm": 56.31780242919922,
+        "rms_x_mm": 32.37154006958008,
+        "rms_y_mm": 29.16458511352539,
+        "rms_z_mm": 35.68199920654297,
+        "wallclock_s_per_inference": 0.053358269999929084,
+        "test_rms_per_sample": [
+          44.28763961791992,
+          72.37759399414062,
+          11.290460586547852,
+          73.20787048339844
+        ]
+      },
+      "parabolic": {
+        "label": "argmax + parabolic refinement",
+        "rms_total_mm": 55.313838958740234,
+        "rms_x_mm": 30.861631393432617,
+        "rms_y_mm": 28.998870849609375,
+        "rms_z_mm": 35.5843505859375,
+        "wallclock_s_per_inference": 0.0005292999999558863,
+        "test_rms_per_sample": [
+          38.82982635498047,
+          71.08010864257812,
+          8.643651962280273,
+          74.85741424560547
+        ]
+      },
+      "gaussian_blur": {
+        "label": "Gaussian-smooth + argmax (sigma=2 vox)",
+        "rms_total_mm": 59.85939407348633,
+        "rms_x_mm": 36.057552337646484,
+        "rms_y_mm": 30.777427673339844,
+        "rms_z_mm": 36.54791259765625,
+        "wallclock_s_per_inference": 0.0373832466667712,
+        "test_rms_per_sample": [
+          43.822593688964844,
+          75.16201782226562,
+          22.808727264404297,
+          79.01013946533203
+        ]
+      }
+    },
+    {
+      "argmax": {
+        "label": "argmax(Q)",
+        "rms_total_mm": 75.6569595336914,
+        "rms_x_mm": 40.187007904052734,
+        "rms_y_mm": 43.66062545776367,
+        "rms_z_mm": 46.93324661254883,
+        "wallclock_s_per_inference": 0.0005392233331804163,
+        "test_rms_per_sample": [
+          101.85404205322266,
+          37.149227142333984,
+          89.0447998046875,
+          56.6799201965332
+        ]
+      },
+      "centroid": {
+        "label": "weighted centroid",
+        "rms_total_mm": 34.929771423339844,
+        "rms_x_mm": 18.407764434814453,
+        "rms_y_mm": 14.733481407165527,
+        "rms_z_mm": 25.771448135375977,
+        "wallclock_s_per_inference": 0.048777640000237925,
+        "test_rms_per_sample": [
+          44.110111236572266,
+          16.547042846679688,
+          39.5416259765625,
+          33.125648498535156
+        ]
+      },
+      "centroid_thresh": {
+        "label": "threshold-centroid (Q>0.85*Qmax)",
+        "rms_total_mm": 67.09952545166016,
+        "rms_x_mm": 29.8576602935791,
+        "rms_y_mm": 40.14186096191406,
+        "rms_z_mm": 44.71574020385742,
+        "wallclock_s_per_inference": 0.053256166666687935,
+        "test_rms_per_sample": [
+          74.38676452636719,
+          38.187713623046875,
+          88.77269744873047,
+          56.00980758666992
+        ]
+      },
+      "parabolic": {
+        "label": "argmax + parabolic refinement",
+        "rms_total_mm": 75.67581176757812,
+        "rms_x_mm": 40.07577896118164,
+        "rms_y_mm": 43.66463088989258,
+        "rms_z_mm": 47.054866790771484,
+        "wallclock_s_per_inference": 0.0006738966665579937,
+        "test_rms_per_sample": [
+          101.86405181884766,
+          37.2822380065918,
+          89.02499389648438,
+          56.70638656616211
+        ]
+      },
+      "gaussian_blur": {
+        "label": "Gaussian-smooth + argmax (sigma=2 vox)",
+        "rms_total_mm": 80.3580093383789,
+        "rms_x_mm": 43.12699890136719,
+        "rms_y_mm": 47.51921844482422,
+        "rms_z_mm": 48.36729431152344,
+        "wallclock_s_per_inference": 0.03722925999997339,
+        "test_rms_per_sample": [
+          107.27449798583984,
+          38.87743377685547,
+          94.76959228515625,
+          61.8796501159668
+        ]
+      }
+    }
+  ],
+  "aggregated": {
+    "argmax": {
+      "label": "argmax(Q)",
+      "rms_total_mean_mm": 70.08661651611328,
+      "rms_total_std_mm": 10.63160022867252,
+      "rms_x_mean_mm": 39.92752329508463,
+      "rms_x_std_mm": 7.514767925831867,
+      "rms_y_mean_mm": 35.26354217529297,
+      "rms_y_std_mm": 6.1232222141276775,
+      "rms_z_mean_mm": 45.16604232788086,
+      "rms_z_std_mm": 7.314594944410178,
+      "wallclock_ms_mean": 0.47948222216089365
+    },
+    "centroid": {
+      "label": "weighted centroid",
+      "rms_total_mean_mm": 32.74812316894531,
+      "rms_total_std_mm": 2.4471757613147944,
+      "rms_x_mean_mm": 13.816902796427408,
+      "rms_x_std_mm": 3.4243977550778304,
+      "rms_y_mean_mm": 14.230937639872232,
+      "rms_y_std_mm": 1.3827573457301934,
+      "rms_z_mean_mm": 25.88659922281901,
+      "rms_z_std_mm": 1.1168147048985755,
+      "wallclock_ms_mean": 48.60068555555901
+    },
+    "centroid_thresh": {
+      "label": "threshold-centroid (Q>0.85*Qmax)",
+      "rms_total_mean_mm": 67.84944661458333,
+      "rms_total_std_mm": 9.736153360433569,
+      "rms_x_mean_mm": 37.62111854553223,
+      "rms_x_std_mm": 9.258662305949148,
+      "rms_y_mean_mm": 33.981422424316406,
+      "rms_y_std_mm": 4.581054787958157,
+      "rms_z_mean_mm": 44.412164052327476,
+      "rms_z_std_mm": 7.007503924044282,
+      "wallclock_ms_mean": 53.37101888888154
+    },
+    "parabolic": {
+      "label": "argmax + parabolic refinement",
+      "rms_total_mean_mm": 70.11582565307617,
+      "rms_total_std_mm": 10.573974818871795,
+      "rms_x_mean_mm": 39.95224571228027,
+      "rms_x_std_mm": 7.372540766759929,
+      "rms_y_mean_mm": 35.10918426513672,
+      "rms_y_std_mm": 6.231914456941034,
+      "rms_z_mean_mm": 45.30285898844401,
+      "rms_z_std_mm": 7.325391200512979,
+      "wallclock_ms_mean": 0.5797111110748826
+    },
+    "gaussian_blur": {
+      "label": "Gaussian-smooth + argmax (sigma=2 vox)",
+      "rms_total_mean_mm": 68.27533849080403,
+      "rms_total_std_mm": 8.760972890430285,
+      "rms_x_mean_mm": 37.625762939453125,
+      "rms_x_std_mm": 4.007974138452967,
+      "rms_y_mean_mm": 37.49211502075195,
+      "rms_y_std_mm": 7.225001257565166,
+      "rms_z_mean_mm": 42.72272872924805,
+      "rms_z_std_mm": 4.83978789193027,
+      "wallclock_ms_mean": 37.430338888952974
+    }
+  },
+  "focus_point_net_reference": {
+    "label": "FocusPointNet (learnt)",
+    "rms_total_mean_mm": 26.25,
+    "rms_total_std_mm": 4.61,
+    "rms_x_mean_mm": 4.63,
+    "rms_x_std_mm": 2.21,
+    "rms_y_mean_mm": 2.69,
+    "rms_y_std_mm": 1.21,
+    "rms_z_mean_mm": 25.65,
+    "rms_z_std_mm": 4.17,
+    "wallclock_ms_mean": 9.0
+  }
+}

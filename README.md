@@ -23,8 +23,8 @@ hızlandıran iki-kollu pipeline.
 | Faz-kuantizasyon çalışması (5° / 10° / 15°) | ✅ 5° pipeline'a adopte edildi |
 | Isı-haritası / DSNT varyantı (nnLandmark tarzı) | ✅ Baseline ile parite (25.27 mm) |
 | Sempozyum abstract — Kol A (forward) | ✅ [abstract_a_en.pdf](reports/abstract_a_en.pdf) · [abstract_a_tr.pdf](reports/abstract_a_tr.pdf) |
-| Sempozyum abstract — Kol B (inverse) | 🟡 Taslak hazır, gold-standard kıyaslama yer tutucu — [abstract_b_en.pdf](reports/abstract_b_en.pdf) · [abstract_b_tr.pdf](reports/abstract_b_tr.pdf) |
-| Klasik gold-standard kıyaslama (Kol B) | ⏳ Hazırlanıyor — Pazar koşturulacak |
+| Sempozyum abstract — Kol B (inverse) | ✅ Hazır — [abstract_b_en.pdf](reports/abstract_b_en.pdf) · [abstract_b_tr.pdf](reports/abstract_b_tr.pdf) |
+| Klasik gold-standard kıyaslama (Kol B) | ✅ Tamam — lateral X 3.0× / Y 5.3× iyileşme · [gold_standard.md](outputs/focus_arch_compare/gold_standard.md) |
 | Fizik brifingi + I/O spec + literatür notları | ✅ [physics_first_brief.md](reports/physics_first_brief.md), [inputs_and_normalization.md](reports/inputs_and_normalization.md), [literature_notes.md](reports/literature_notes.md) |
 | Teslim paketi | ✅ `sent.zip` (5.2 MB, 21 dosya) |
 | Sonraki iterasyon: transfer learning + 500 örnek | ⏳ Plan netleşti — [future_work_ai.md](reports/future_work_ai.md) |
@@ -183,7 +183,7 @@ gold-standard kıyaslama eklenince camera-ready'e tamamlanacak.
 | Kol | İngilizce | Türkçe | Not |
 |---|---|---|---|
 | **A — Forward (FNO)** | [abstract_a_en.pdf](reports/abstract_a_en.pdf) | [abstract_a_tr.pdf](reports/abstract_a_tr.pdf) | Klinik motivasyon + k-Wave wallclock kıyası + veri seti gerekçesi + omurga ablasyon novelty |
-| **B — Inverse (3-DOF)** | [abstract_b_en.pdf](reports/abstract_b_en.pdf) | [abstract_b_tr.pdf](reports/abstract_b_tr.pdf) | Gauge-aware reformulation + örnek-verimlilik + 5° kuantizasyon · gold-standard kıyas yer tutucu |
+| **B — Inverse (3-DOF)** | [abstract_b_en.pdf](reports/abstract_b_en.pdf) | [abstract_b_tr.pdf](reports/abstract_b_tr.pdf) | Gauge-aware reformulation + örnek-verimlilik + 5° kuantizasyon + 5 klasik gold-standard ile çoklu-seed kıyas |
 | _(legacy birleşik)_ | [abstract_en.pdf](reports/abstract_en.pdf) | [abstract_tr.pdf](reports/abstract_tr.pdf) | Pazartesi'ye kadar referans amaçlı |
 
 - **Ana görsel rapor**: [`reports/sonuclar.pdf`](reports/sonuclar.pdf)

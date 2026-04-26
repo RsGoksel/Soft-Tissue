@@ -138,6 +138,8 @@ def make_sent() -> None:
         "focus_point/loss_curve.png",
         "focus_arch_compare/summary.md",
         "focus_arch_compare/multi_seed_summary.md",
+        "focus_arch_compare/gold_standard.md",
+        "focus_arch_compare/gold_standard.json",
         "focus_heatmap/results_heatmap_seed0.json",
         "focus_heatmap/results_heatmap_offset_seed0.json",
         "phase_quant_10deg.png",
