@@ -67,3 +67,6 @@ reports/abstract_*.md
 hoca_dashboard.html
 .grok_key
 .webhook_url
+
+# Q&A log collected from webhook.site (advisor-private)
+outputs/qa_log/
