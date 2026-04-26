@@ -144,19 +144,73 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     height: fit-content;
     position: sticky; top: 24px;
   }
-  aside h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase;
-            letter-spacing: 0.04em; color: var(--c-muted); }
+  aside h2 {
+    margin: 0 0 14px; font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--c-muted);
+  }
   aside ul { list-style: none; padding: 0; margin: 0; }
   aside li {
-    padding: 9px 12px; cursor: pointer;
-    border-radius: 6px; margin-bottom: 4px;
-    color: var(--c-accent); font-size: 14px; line-height: 1.4;
-    transition: background 0.12s;
+    position: relative;
+    padding: 12px 14px 12px 36px;
+    cursor: pointer;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    color: var(--c-text);
+    font-size: 14.5px;
+    line-height: 1.5;
+    background: #f4f8fc;
+    border: 1px solid #e3ecf5;
+    border-left: 3px solid transparent;
+    transition: all 0.15s ease;
   }
-  aside li:hover { background: var(--c-msg-user); }
+  aside li::before {
+    content: counter(item);
+    counter-increment: item;
+    position: absolute;
+    left: 12px; top: 12px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--c-accent);
+    color: #fff;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    line-height: 1;
+  }
+  aside ul { counter-reset: item; }
+  aside li:hover {
+    background: var(--c-msg-user);
+    border-left-color: var(--c-accent);
+    transform: translateX(2px);
+  }
+  aside li:active { transform: translateX(0); }
   aside .info {
     font-size: 12px; color: var(--c-muted);
-    margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--c-border);
+    margin-top: 20px; padding-top: 16px;
+    border-top: 1px solid var(--c-border);
+    line-height: 1.6;
+  }
+  aside .info a { color: var(--c-accent); }
+  aside .download-btn {
+    width: 100%;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #fff;
+    border: 1px solid var(--c-border);
+    border-radius: 6px;
+    color: var(--c-accent);
+    font-size: 13px; font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.12s;
+  }
+  aside .download-btn:hover {
+    background: var(--c-msg-user);
+    border-color: var(--c-accent);
+  }
+  aside .download-btn:disabled {
+    color: var(--c-muted); cursor: not-allowed;
+    opacity: 0.6;
   }
   .chat-container {
     background: var(--c-card);
@@ -293,13 +347,17 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 
 <main>
   <aside>
-    <h2>Önerilen Sorular</h2>
+    <h2>Önerilen Sorular · Tıklayın</h2>
     <ul id="suggested"></ul>
+    <button id="download-log" class="download-btn" disabled>
+      📥 Konuşma Kaydını İndir (<span id="log-count">0</span>)
+    </button>
     <div class="info">
       <strong>Bilgi tabanı:</strong> __KB_COUNT__ doküman, ~__KB_KB__ KB.<br>
       Proje deposu:
       <a href="https://github.com/RsGoksel/Soft-Tissue" target="_blank">github.com/RsGoksel/Soft-Tissue</a><br>
-      <em style="opacity:0.7">Günlük 10 soru limiti gece yarısı sıfırlanır.</em>
+      <em style="opacity:0.75">Günlük 10 soru limiti gece yarısı sıfırlanır.
+      İsterseniz oturum sonunda kayıtları indirip iletebilirsiniz.</em>
     </div>
   </aside>
 
@@ -368,6 +426,46 @@ function refreshCounter() {
   if (c.count >= DAILY_LIMIT) {
     $("send-btn").textContent = "Limit doldu";
   }
+}
+
+// --- Q&A logging ---------------------------------------------------------
+// Every question and answer is timestamped and stored in localStorage so
+// the operator can later download the transcript for system improvement.
+function readLog() {
+  try { return JSON.parse(localStorage.getItem("hoca_qa_log") || "[]"); }
+  catch (e) { return []; }
+}
+function appendLog(entry) {
+  const log = readLog();
+  log.push(entry);
+  localStorage.setItem("hoca_qa_log", JSON.stringify(log));
+  refreshLogButton();
+}
+function refreshLogButton() {
+  const log = readLog();
+  $("log-count").textContent = log.length;
+  $("download-log").disabled = log.length === 0;
+}
+function downloadLog() {
+  const log = readLog();
+  if (log.length === 0) return;
+  const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+  const payload = {
+    exported_at: new Date().toISOString(),
+    user_agent:  navigator.userAgent,
+    daily_count: readCounter().count,
+    entries:     log,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)],
+                        { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `hoca_qa_log_${stamp}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // minimal-but-usable markdown renderer
@@ -470,12 +568,21 @@ async function send() {
   const c = readCounter();
   if (c.count >= DAILY_LIMIT) return;
 
+  const tsQ = new Date();
+  appendLog({
+    ts: tsQ.toISOString(),
+    role: "user",
+    content: text,
+    daily_index: c.count + 1,
+  });
+
   appendMsg("user", text);
   messages.push({ role: "user", content: text });
   input.value = "";
   input.style.height = "auto";
   $("send-btn").disabled = true;
   const typing = appendTyping();
+  const tStart = performance.now();
 
   try {
     const r = await fetch(API_URL, {
@@ -497,19 +604,39 @@ async function send() {
     if (!r.ok) {
       const err = await r.text();
       appendMsg("error", `API hatası (${r.status}): ${err.slice(0, 400)}`);
+      appendLog({
+        ts: new Date().toISOString(),
+        role: "error",
+        status_code: r.status,
+        content: err.slice(0, 400),
+      });
       $("send-btn").disabled = false;
       return;
     }
     const data = await r.json();
     const reply = data.choices?.[0]?.message?.content || "(boş yanıt)";
+    const latency_ms = Math.round(performance.now() - tStart);
     appendMsg("assistant", reply);
     messages.push({ role: "assistant", content: reply });
+    appendLog({
+      ts: new Date().toISOString(),
+      role: "assistant",
+      content: reply,
+      latency_ms: latency_ms,
+      model: MODEL,
+      usage: data.usage || null,
+    });
     c.count += 1;
     writeCounter(c);
     refreshCounter();
   } catch (e) {
     typing.remove();
     appendMsg("error", `Bağlantı hatası: ${e.message}`);
+    appendLog({
+      ts: new Date().toISOString(),
+      role: "error",
+      content: `Bağlantı hatası: ${e.message}`,
+    });
     $("send-btn").disabled = false;
   }
 }
@@ -529,8 +656,10 @@ function setupSuggested() {
 
 document.addEventListener("DOMContentLoaded", () => {
   refreshCounter();
+  refreshLogButton();
   setupSuggested();
   $("send-btn").addEventListener("click", send);
+  $("download-log").addEventListener("click", downloadLog);
   $("input").addEventListener("keydown", (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
