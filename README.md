@@ -264,6 +264,7 @@ sempozyum gönderimine hazır.
 
 - **Ana görsel rapor**: [`reports/sonuclar.pdf`](reports/sonuclar.pdf)
 - **Toplantı hazırlık dokümanları**:
+  - [`reports/pazartesi_toplanti.md`](reports/pazartesi_toplanti.md) — **Pazartesi 28.04 toplantı gündemi**, tüm tartışılacak konular
   - [`reports/physics_first_brief.md`](reports/physics_first_brief.md) — fizik perspektifinden anlatım
   - [`reports/inputs_and_normalization.md`](reports/inputs_and_normalization.md) — model girdi/çıktı tam spesifikasyonu
   - [`reports/literature_notes.md`](reports/literature_notes.md) — danışmanın paylaştığı IEEE referansları
