@@ -1,9 +1,37 @@
-# Soft-Tissue — Heterojen Meme Dokusunda HIFU Planlaması için AI Pipeline'ı
+# Soft-Tissue — Heterojen Meme Dokusunda HIFU Planlaması için Sinir Vekil Modelleri
 
-Yüksek-yoğunluklu odaklanmış ultrason (HIFU) ile **tümör ablasyon
-planlamasının** iki pahalı hesaplama adımını (ileri basınç alanı
-tahmini + ters faz sentezi) sinir operatörü + kompakt 3-B CNN ile
-hızlandıran iki-kollu pipeline.
+## Bu çalışma neyi çözüyor?
+
+**Klinik sorun.** Yüksek yoğunluklu odaklanmış ultrason (HIFU) tümörü
+çevre dokuya zarar vermeden termal olarak yok eder. Doğru çalışması
+için odak noktasının hastaya özgü doku heterojenliği altında
+**milimetrik doğrulukla** yerleştirilmesi gerekir; klinisyen
+tedaviyi planlarken **saniye-altı geri bildirim** ister.
+
+**Hesaplama darboğazı.** Bu doğruluğu üretebilecek tek referans
+çözücü tam-dalga akustik simülasyondur (k-Wave gibi). Bizim
+ölçtüğümüz wallclock: RTX 4070 üzerinde 316 × 256 grid, 1 MHz HIFU
+için **konfigürasyon başına ~60 saniye**. Klinik akış bu hızda
+kullanılamaz. Frekans-domeni Helmholtz çözücüleri, ışın izleme,
+veya önceden hesaplanmış arama tabloları — her biri farklı bir
+eksende tökezler (geçici bilgi kaybı, kırılma kuyruğu kaybı,
+hastaya adaptasyon eksikliği).
+
+**Yaklaşımımız.** Pipeline'ı iki kola ayırıyoruz:
+- **Kol A — İleri (forward) hızlandırma:** Doku haritasından akustik
+  basınç alanını tahmin eden bir **sinir operatörü** (FNO),
+  k-Wave'in yerine geçiyor: **8 ms** çıkarım, **~7500× hızlanma**.
+- **Kol B — Ters (inverse) faz sentezi:** İlk yaklaşımımız (256
+  faz doğrudan tahmini) **fiziksel olarak ill-posed** çıktı (gauge
+  simetrisi + tek-çoğa eşleme). Yeniden formüle ettik: kompakt bir
+  3-B CNN sadece **odak noktasını (x, y, z)** tahmin ediyor, fazlar
+  ardından **kapalı-form delay-and-sum** ile elde ediliyor.
+
+**Bilinen şey.** AI burada bir akıl değil, **simülasyon süresi-doğruluk
+Pareto'sundaki kör nokta** için bir mühendislik çözümü. Klasik
+yöntemlerden hız + GPU bağımsızlığı + hastaya adaptasyon üçlüsünü
+aynı anda alabilen bir yol yok; AI vekil modeli tam bu boşluğa
+oturuyor.
 
 > Sempozyum makalesi için hazırlanan çalışma deposudur. Ters problem
 > simülatörü ve k-Wave doğrulamaları, ITÜ'deki işbirlikçi ekiple
@@ -11,7 +39,7 @@ hızlandıran iki-kollu pipeline.
 
 ---
 
-## Şu Anki Durum (2026-04-24)
+## Şu Anki Durum (2026-04-25, sempozyum deadline 2026-05-01)
 
 | Kalem | Durum |
 |---|---|
@@ -138,25 +166,73 @@ denklemine uyuyor; jenerik CNN'ler bu görevi yapmıyor. FNO U-Net'i
 
 ### Kol B — 3-B ters odak-noktası regresyonu (30 hacim, 22 / 4 / 4 bölünme)
 
-Çok-seed'li (3 seed × 3 omurga, 120 epoch/koşu) karşılaştırma:
+**Sinir ağı mimari karşılaştırması** (3 seed × 3 omurga + heatmap varyantı):
 
-| Omurga    | Test RMS (mm)     | X (mm)      | Y (mm)      | Z (mm)         |
-|-----------|-------------------|-------------|-------------|----------------|
-| **CNN**   | **26.25 ± 4.61**  | 4.63 ± 2.21 | 2.69 ± 1.21 | 25.65 ± 4.17   |
-| ResNet-3D | 34.48 ± 3.74      | 5.90 ± 3.76 | 3.10 ± 1.36 | 33.64 ± 3.21   |
-| UNet-enc  | 34.17 ± 8.01      | 3.93 ± 0.70 | 3.02 ± 1.05 | 33.71 ± 8.32   |
-| Heatmap-DSNT | 25.27         | 4.80        | 7.04        | **23.79**      |
-| Analitik (weighted-centroid) | 33.98 | 12.9 | 15.6 | 27.3            |
+| Omurga       | Test RMS (mm)     | X (mm)      | Y (mm)      | Z (mm)         |
+|--------------|-------------------|-------------|-------------|----------------|
+| **CNN**      | **26.25 ± 4.61**  | 4.63 ± 2.21 | 2.69 ± 1.21 | 25.65 ± 4.17   |
+| ResNet-3D    | 34.48 ± 3.74      | 5.90 ± 3.76 | 3.10 ± 1.36 | 33.64 ± 3.21   |
+| UNet-enc     | 34.17 ± 8.01      | 3.93 ± 0.70 | 3.02 ± 1.05 | 33.71 ± 8.32   |
+| Heatmap-DSNT | 25.27             | 4.80        | 7.04        | **23.79**      |
+
+**Klasik gold-standard kıyaslama** (3 seed × 5 closed-form yöntem,
+aynı bölüm) — [tam tablo](outputs/focus_arch_compare/gold_standard.md):
+
+| Yöntem                      | Test RMS (mm) | X (mm) | Y (mm) | Wallclock |
+|-----------------------------|---------------|--------|--------|-----------|
+| argmax(Q)                   | 70.09 ± 10.6  | 39.93  | 35.26  | 0.5 ms    |
+| **weighted centroid**       | **32.75 ± 2.5** | 13.82  | 14.23  | 49 ms     |
+| threshold (>0.85·Qmax)      | 67.85 ± 9.7   | 37.62  | 33.98  | 53 ms     |
+| parabolic refinement        | 70.12 ± 10.6  | 39.95  | 35.11  | 0.6 ms    |
+| Gaussian-smooth + argmax    | 68.28 ± 8.8   | 37.63  | 37.49  | 37 ms     |
+| **FocusPointNet (öğrenilmiş)** | **26.25 ± 4.6** | **4.63** | **2.69** | **9 ms** |
 
 **Bulgular:**
-- **Lateral doğruluk mimari-bağımsız** — üç CNN omurgası da 3–6 mm
-  aralığında, HIFU doğal focal spot'un (~6 mm) içinde. "İyi sonuç"
-  görevin özelliği, tek bir modelin değil.
-- **Eksenel (Z) doğruluk mimari değil veri sorunu** — her omurgada
-  25–34 mm. Z menzili lateral menzilin 2×'ü + HIFU focal zone eksenel
-  olarak uzun.
-- **Isı-haritası DSNT baseline'a yetişiyor** ama onu geçmiyor —
-  30 örnek rejiminde sparse-supervision avantajı marjinal.
+- **Lateral doğruluk mimari-bağımsız** — üç CNN omurgası ve heatmap
+  DSNT varyantı 3–6 mm aralığında, HIFU doğal focal spot'un (~6 mm)
+  içinde. "İyi sonuç" görevin özelliği, tek bir modelin değil.
+- **Heat tepesi ≠ hedef.** Tüm peak-finder klasik yöntemler (argmax,
+  threshold, parabolic, Gaussian) 65-80 mm RMS'de takılır çünkü doku
+  kırılması altında ısı tepesi istenen hedeften 30-50 mm ötelenir.
+  Bu, gauge-aware reformülasyonumuzun dolaylı bir doğrulamasıdır:
+  "AI sistematik biası öğreniyor".
+- **FocusPointNet, en güçlü klasik temele kıyasla lateral X'te 3.0×,
+  Y'de 5.3× iyileşme** sağlıyor (Z eşit, veri-kısıtlı).
+- **Heatmap DSNT'in eksenelde marjinal kazancı**, eksenel sorunun
+  veri rejiminden kaynaklandığının ek kanıtı.
+
+## Bilinen Sınırlar (Limitations)
+
+Dürüst olmak gerekirse, bu çalışma sempozyum versiyonunda şu
+sınırlamaları taşıyor — paper içinde bunlar açıkça belirtilecek:
+
+1. **Eksenel (Z) doğruluğu klinik için yetersiz.** 25-26 mm Z RMS,
+   tipik HIFU lezyon uzunluğunun ötesinde. Sebep teknik değil veri:
+   30 simülasyonluk veri seti + Z menzilinin lateral menzilin 2×
+   olması. ITÜ ortağımızın 500+ örnek üreteceği genişletilmiş set
+   geldiğinde sub-15 mm hedeflenir; transfer learning (SAM-Med3D /
+   MONAI) eklenirse sub-5 mm.
+2. **Kol A henüz doğrudan kullanılabilir bir tedavi değildir.**
+   FNO basınç alanını saniyenin binde 1'inde tahmin ediyor — ama
+   bu kendi başına klinik karar üretmez. Tam pipeline (forward
+   vekil + iter. faz optimizasyonu) entegrasyonu sonraki iterasyona
+   kalıyor.
+3. **k-Wave referansı kendisi de bir model.** 2-B düzlem dilim
+   varsayımı 3-B kırılma etkilerinin bir kısmını ihmal eder. Tam
+   3-B referansa geçiş hesaplama maliyeti nedeniyle henüz
+   yapılmadı (3-B simülasyon başına ~30 dakika).
+4. **OpenBreastUS *in silico* fantomlardan türetilmiş.** Gerçek
+   hasta MR'larından doğrudan türetilmiş olsalar da, sentetik
+   transdüser geometrisi ve homojen su tabakası varsayımları taşır.
+   Klinik validasyon ileri adım.
+5. **Gauge fix konvansiyonu (`φ₀ = 0`) keyfi.** Eşdeğer fakat
+   farklı temsilciler seçilebilir; downstream donanım entegrasyonu
+   için bu seçim transdüser sürücüsünün sıfır referansıyla
+   hizalanmalı.
+6. **Klasik gold-standard kıyaslamamız *closed-form* yöntemlerle
+   sınırlı.** Tam k-Wave forward üzerinde iteratif faz optimizasyonu
+   (örn. CG / adjoint metodu) ile karşılaştırma planlandı ancak
+   sempozyum öncesi koşturulmadı.
 
 ## Gelecek Çalışmalar
 
@@ -177,8 +253,8 @@ yarar, transfer learning neden en büyük kazancı verir):
 ## Sempozyum Abstract Durumu
 
 Danışmanın önerisi doğrultusunda **iki ayrı abstract** hazırlandı (1 sayfa
-× 2 sunum). Kol A standalone yayıma hazır; Kol B abstract'ı klasik
-gold-standard kıyaslama eklenince camera-ready'e tamamlanacak.
+× 2 sunum). İkisi de gold-standard kıyaslama numaraları ile güncel ve
+sempozyum gönderimine hazır.
 
 | Kol | İngilizce | Türkçe | Not |
 |---|---|---|---|
@@ -245,12 +321,14 @@ Introduction için kullanılabilecek hazır materyal:
 | Kanal | İçerik | Boyut |
 |---|---|---|
 | **Bu depo** | Tüm kod + figürler + JSON sonuçları | ~10 MB |
-| **`sent.zip`** | Tek paket: figürler, tablolar, abstract, görsel rapor | 5.2 MB, 21 dosya |
+| **`sent.zip`** | Tek paket: figürler, tablolar, abstract'lar, görsel rapor, gold-standard tablosu | 5.4 MB |
 | **[`reports/sonuclar.pdf`](reports/sonuclar.pdf)** | Ekran paylaşımı için uygun görsel rapor | 1.5 MB |
-| **[`reports/abstract_en.pdf`](reports/abstract_en.pdf)** / [`abstract_tr.pdf`](reports/abstract_tr.pdf) | Sempozyum abstract'ı (EN + TR) | ~100 KB |
+| **Sempozyum abstract'ları** (Kol A + Kol B, EN + TR) | [a_en](reports/abstract_a_en.pdf), [a_tr](reports/abstract_a_tr.pdf), [b_en](reports/abstract_b_en.pdf), [b_tr](reports/abstract_b_tr.pdf) | ~400 KB toplam |
+| **Toplantı brief'leri** | [physics_first_brief.md](reports/physics_first_brief.md), [inputs_and_normalization.md](reports/inputs_and_normalization.md), [literature_notes.md](reports/literature_notes.md) | — |
 | **Canlı inference** | Eğitilmiş modeller yerel makinede hazır; yeni girdide çıktı üretilebilir | — |
 
-Toplantı için Cumartesi ve Pazar uygunluğum var.
+Toplantı: **Pazartesi 28.04.2026, ofiste, öğleden sonra**
+(11:30-13:30 arası danışman uygun değil).
 
 ---
 
