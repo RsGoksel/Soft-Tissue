@@ -25,12 +25,15 @@ from __future__ import annotations
 import json
 import os
 import sys
+import urllib.request
+import urllib.error
 from html import escape
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_PATH = ROOT / "hoca_dashboard.html"
 KEY_PATH = ROOT / ".grok_key"
+WEBHOOK_PATH = ROOT / ".webhook_url"
 
 # Markdown files to embed as project knowledge base.
 # Each entry: (display label shown to the model, file path).
@@ -56,6 +59,40 @@ def load_api_key() -> str:
     print("error: provide the xAI API key via env XAI_API_KEY or "
           ".grok_key file", file=sys.stderr)
     raise SystemExit(1)
+
+
+def get_or_create_webhook_url() -> tuple[str, str]:
+    """Return (post_url, view_url). Reads cached URL from .webhook_url
+    or asks webhook.site to mint a fresh one."""
+    if WEBHOOK_PATH.exists():
+        post_url = WEBHOOK_PATH.read_text(encoding="utf-8").strip()
+        if post_url:
+            uuid = post_url.rstrip("/").split("/")[-1]
+            view = f"https://webhook.site/#!/view/{uuid}"
+            print(f"[gen] using cached webhook: {post_url}")
+            return post_url, view
+
+    print("[gen] minting fresh webhook.site URL ...")
+    try:
+        req = urllib.request.Request(
+            "https://webhook.site/token",
+            data=b"{}",
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as r:
+            body = json.loads(r.read().decode("utf-8"))
+        uuid = body["uuid"]
+        post_url = f"https://webhook.site/{uuid}"
+        view_url = f"https://webhook.site/#!/view/{uuid}"
+        WEBHOOK_PATH.write_text(post_url + "\n", encoding="utf-8")
+        print(f"[gen] minted: {post_url}")
+        return post_url, view_url
+    except (urllib.error.URLError, KeyError, json.JSONDecodeError) as exc:
+        print(f"[gen] webhook minting failed: {exc}", file=sys.stderr)
+        print("[gen] dashboard will run without remote logging "
+              "(localStorage + manual export only)", file=sys.stderr)
+        return "", ""
 
 
 def load_context() -> list[dict]:
@@ -342,7 +379,10 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
     <h1>HIFU Soft-Tissue · Danışman Dashboard</h1>
     <div class="sub">Proje hakkında soru sorun · Cevaplar yalnızca proje belgelerine dayanır</div>
   </div>
-  <div class="counter">Bugün: <strong id="counter-now">0</strong> / 10 soru</div>
+  <div class="counter">
+    Son 1 saat: <strong id="counter-now">0</strong> / <strong>__HOURLY_LIMIT__</strong> soru
+    <span id="counter-reset" style="display:none; opacity:0.85; margin-left:6px;"></span>
+  </div>
 </header>
 
 <main>
@@ -356,8 +396,9 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
       <strong>Bilgi tabanı:</strong> __KB_COUNT__ doküman, ~__KB_KB__ KB.<br>
       Proje deposu:
       <a href="https://github.com/RsGoksel/Soft-Tissue" target="_blank">github.com/RsGoksel/Soft-Tissue</a><br>
-      <em style="opacity:0.75">Günlük 10 soru limiti gece yarısı sıfırlanır.
-      İsterseniz oturum sonunda kayıtları indirip iletebilirsiniz.</em>
+      <em style="opacity:0.75">Saatte __HOURLY_LIMIT__ soru limiti
+      var; en eski sorudan 60 dakika geçtikçe yeni hak açılır.
+      Soru-cevaplar sistemi geliştirmek için kayıt altına alınmaktadır.</em>
     </div>
   </aside>
 
@@ -381,10 +422,12 @@ HTML_TEMPLATE = r"""<!DOCTYPE html>
 </main>
 
 <script>
-const API_KEY = "__API_KEY__";
-const API_URL = "https://api.x.ai/v1/chat/completions";
-const MODEL   = "grok-3-latest";
-const DAILY_LIMIT = 10;
+const API_KEY     = "__API_KEY__";
+const API_URL     = "https://api.x.ai/v1/chat/completions";
+const MODEL       = "grok-3-latest";
+const HOURLY_LIMIT = __HOURLY_LIMIT__;
+const WEBHOOK_URL = "__WEBHOOK_URL__";    // empty -> no remote logging
+const SESSION_ID  = "sess-" + Math.random().toString(36).slice(2, 10);
 
 const PROJECT_CONTEXT = __PROJECT_CONTEXT_JSON__;
 const SUGGESTED = __SUGGESTED_JSON__;
@@ -406,27 +449,40 @@ ${PROJECT_CONTEXT.map(d => `\n--- DOKÜMAN: ${d.label} (${d.path}) ---\n${d.text
 const messages = [];
 const $ = (id) => document.getElementById(id);
 
-function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+// hourly window — count user messages in the last 60 minutes
+function hourWindowMs() { return 60 * 60 * 1000; }
+function recentUserQuestions() {
+  const cutoff = Date.now() - hourWindowMs();
+  return readLog().filter(e =>
+    e.role === "user" && new Date(e.ts).getTime() >= cutoff
+  );
 }
-function readCounter() {
-  try {
-    const obj = JSON.parse(localStorage.getItem("hoca_counter") || "{}");
-    if (obj.date !== todayKey()) return { date: todayKey(), count: 0 };
-    return obj;
-  } catch (e) { return { date: todayKey(), count: 0 }; }
-}
-function writeCounter(c) {
-  localStorage.setItem("hoca_counter", JSON.stringify(c));
+function nextSlotIso() {
+  const recent = recentUserQuestions();
+  if (recent.length < HOURLY_LIMIT) return null;
+  // earliest of the recent N slides out of the window first
+  const oldest = recent.slice(-HOURLY_LIMIT)[0];
+  const next = new Date(new Date(oldest.ts).getTime() + hourWindowMs());
+  return next;
 }
 function refreshCounter() {
-  const c = readCounter();
-  $("counter-now").textContent = c.count;
-  $("send-btn").disabled = c.count >= DAILY_LIMIT;
-  if (c.count >= DAILY_LIMIT) {
-    $("send-btn").textContent = "Limit doldu";
+  const recent = recentUserQuestions();
+  $("counter-now").textContent = recent.length;
+  const limited = recent.length >= HOURLY_LIMIT;
+  $("send-btn").disabled = limited;
+  $("send-btn").textContent = limited ? "Saatlik limit doldu" : "Gönder";
+  const tag = $("counter-reset");
+  const next = nextSlotIso();
+  if (next) {
+    const mins = Math.max(0, Math.ceil((next - new Date()) / 60000));
+    tag.textContent = `· ${mins} dk sonra yeni hak`;
+    tag.style.display = "inline";
+  } else {
+    tag.style.display = "none";
   }
 }
+// re-render every 30 s so the "X dk sonra" countdown is fresh
+setInterval(() => refreshCounter(), 30 * 1000);
 
 // --- Q&A logging ---------------------------------------------------------
 // Every question and answer is timestamped and stored in localStorage so
@@ -436,10 +492,20 @@ function readLog() {
   catch (e) { return []; }
 }
 function appendLog(entry) {
+  // attach session metadata
+  entry.session_id = SESSION_ID;
   const log = readLog();
   log.push(entry);
   localStorage.setItem("hoca_qa_log", JSON.stringify(log));
   refreshLogButton();
+  // fire-and-forget remote logging
+  if (WEBHOOK_URL) {
+    fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(entry),
+    }).catch(() => { /* ignore network errors silently */ });
+  }
 }
 function refreshLogButton() {
   const log = readLog();
@@ -451,10 +517,12 @@ function downloadLog() {
   if (log.length === 0) return;
   const stamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
   const payload = {
-    exported_at: new Date().toISOString(),
-    user_agent:  navigator.userAgent,
-    daily_count: readCounter().count,
-    entries:     log,
+    exported_at:        new Date().toISOString(),
+    user_agent:         navigator.userAgent,
+    session_id:         SESSION_ID,
+    last_hour_count:    recentUserQuestions().length,
+    hourly_limit:       HOURLY_LIMIT,
+    entries:            log,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)],
                         { type: "application/json" });
@@ -565,15 +633,15 @@ async function send() {
   const input = $("input");
   const text = input.value.trim();
   if (!text) return;
-  const c = readCounter();
-  if (c.count >= DAILY_LIMIT) return;
+  const recent = recentUserQuestions();
+  if (recent.length >= HOURLY_LIMIT) return;
 
   const tsQ = new Date();
   appendLog({
     ts: tsQ.toISOString(),
     role: "user",
     content: text,
-    daily_index: c.count + 1,
+    hourly_index: recent.length + 1,
   });
 
   appendMsg("user", text);
@@ -626,8 +694,6 @@ async function send() {
       model: MODEL,
       usage: data.usage || null,
     });
-    c.count += 1;
-    writeCounter(c);
     refreshCounter();
   } catch (e) {
     typing.remove();
@@ -677,26 +743,44 @@ document.addEventListener("DOMContentLoaded", () => {
 """
 
 
+HOURLY_LIMIT = 10
+
+
 def main() -> None:
     api_key = load_api_key()
     print(f"[gen] API key loaded ({len(api_key)} chars)")
+
+    post_url, view_url = get_or_create_webhook_url()
 
     docs = load_context()
     total_chars = sum(len(d["text"]) for d in docs)
     print(f"[gen] embedding {len(docs)} docs, {total_chars / 1024:.1f} KB total")
 
     html = HTML_TEMPLATE
-    html = html.replace("__API_KEY__",            api_key)
+    html = html.replace("__API_KEY__",              api_key)
+    html = html.replace("__WEBHOOK_URL__",          post_url)
+    html = html.replace("__HOURLY_LIMIT__",         str(HOURLY_LIMIT))
     html = html.replace("__PROJECT_CONTEXT_JSON__", json.dumps(docs, ensure_ascii=False))
-    html = html.replace("__SUGGESTED_JSON__",     json.dumps(SUGGESTED_QUESTIONS, ensure_ascii=False))
-    html = html.replace("__KB_COUNT__",           str(len(docs)))
-    html = html.replace("__KB_KB__",              f"{total_chars / 1024:.0f}")
+    html = html.replace("__SUGGESTED_JSON__",       json.dumps(SUGGESTED_QUESTIONS, ensure_ascii=False))
+    html = html.replace("__KB_COUNT__",             str(len(docs)))
+    html = html.replace("__KB_KB__",                f"{total_chars / 1024:.0f}")
 
     OUT_PATH.write_text(html, encoding="utf-8")
     size_kb = OUT_PATH.stat().st_size / 1024
+    print()
     print(f"[gen] wrote {OUT_PATH}  ({size_kb:.0f} KB)")
-    print(f"[gen] open in any modern browser; share the file with the advisor")
-    print(f"[gen] DO NOT commit — already in .gitignore")
+    if view_url:
+        print()
+        print("=" * 72)
+        print(" CANLI Q&A KAYDI — bu URL'i kendi tarayıcında aç:")
+        print(f"   {view_url}")
+        print(" Hocanın her sorusu / cevabı gerçek zamanlı buraya düşecek.")
+        print("=" * 72)
+    print()
+    print(f"[gen] hourly limit: {HOURLY_LIMIT}  ·  remote logging: "
+          f"{'ON' if post_url else 'OFF'}")
+    print(f"[gen] open hoca_dashboard.html locally OR send to advisor")
+    print(f"[gen] DO NOT commit — both .grok_key and .webhook_url already in .gitignore")
 
 
 if __name__ == "__main__":

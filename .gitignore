@@ -66,3 +66,4 @@ reports/abstract_*.md
 # One-evening hoca dashboard with embedded API key (DO NOT COMMIT)
 hoca_dashboard.html
 .grok_key
+.webhook_url
