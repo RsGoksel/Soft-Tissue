@@ -150,6 +150,20 @@ def main() -> None:
         print("error: pandoc is not on PATH", file=sys.stderr)
         raise SystemExit(1)
 
+    # split abstracts (per advisor's request: A and B as separate
+    # 1-page submissions). Build all four; build_one tolerates missing
+    # source files so partial runs still work.
+    build_one(REPORTS / "abstract_a_en.md",
+              REPORTS / "abstract_a_en.pdf", lang="en")
+    build_one(REPORTS / "abstract_a_tr.md",
+              REPORTS / "abstract_a_tr.pdf", lang="tr")
+    build_one(REPORTS / "abstract_b_en.md",
+              REPORTS / "abstract_b_en.pdf", lang="en")
+    build_one(REPORTS / "abstract_b_tr.md",
+              REPORTS / "abstract_b_tr.pdf", lang="tr")
+
+    # legacy combined abstracts — keep producing if the source still
+    # exists locally, otherwise skip silently
     build_one(REPORTS / "abstract_en.md",
               REPORTS / "abstract_en.pdf", lang="en")
     build_one(REPORTS / "abstract_tr.md",

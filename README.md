@@ -22,7 +22,10 @@ hızlandıran iki-kollu pipeline.
 | Gauge simetrisi üçlü doğrulaması | ✅ Analitik + sentetik + k-Wave (Eren) |
 | Faz-kuantizasyon çalışması (5° / 10° / 15°) | ✅ 5° pipeline'a adopte edildi |
 | Isı-haritası / DSNT varyantı (nnLandmark tarzı) | ✅ Baseline ile parite (25.27 mm) |
-| Sempozyum abstract (EN + TR) | ✅ Hazır — [abstract_en.pdf](reports/abstract_en.pdf), [abstract_tr.pdf](reports/abstract_tr.pdf) |
+| Sempozyum abstract — Kol A (forward) | ✅ [abstract_a_en.pdf](reports/abstract_a_en.pdf) · [abstract_a_tr.pdf](reports/abstract_a_tr.pdf) |
+| Sempozyum abstract — Kol B (inverse) | 🟡 Taslak hazır, gold-standard kıyaslama yer tutucu — [abstract_b_en.pdf](reports/abstract_b_en.pdf) · [abstract_b_tr.pdf](reports/abstract_b_tr.pdf) |
+| Klasik gold-standard kıyaslama (Kol B) | ⏳ Hazırlanıyor — Pazar koşturulacak |
+| Fizik brifingi + I/O spec + literatür notları | ✅ [physics_first_brief.md](reports/physics_first_brief.md), [inputs_and_normalization.md](reports/inputs_and_normalization.md), [literature_notes.md](reports/literature_notes.md) |
 | Teslim paketi | ✅ `sent.zip` (5.2 MB, 21 dosya) |
 | Sonraki iterasyon: transfer learning + 500 örnek | ⏳ Plan netleşti — [future_work_ai.md](reports/future_work_ai.md) |
 
@@ -173,13 +176,22 @@ yarar, transfer learning neden en büyük kazancı verir):
 
 ## Sempozyum Abstract Durumu
 
-- **İngilizce**: [`reports/abstract_en.pdf`](reports/abstract_en.pdf) —
-  son sürüm, multi-seed + heatmap DSNT rakamlarıyla güncel.
-- **Türkçe**: [`reports/abstract_tr.pdf`](reports/abstract_tr.pdf) —
-  aynı içerik, Türkçe tam çeviri.
-- **Ana görsel rapor**: [`reports/sonuclar.pdf`](reports/sonuclar.pdf).
-- Teslim edilecek paket: `sent.zip` (kök dizinde,
-  `scripts/build_sent_bundle.py` tarafından yeniden üretilebilir).
+Danışmanın önerisi doğrultusunda **iki ayrı abstract** hazırlandı (1 sayfa
+× 2 sunum). Kol A standalone yayıma hazır; Kol B abstract'ı klasik
+gold-standard kıyaslama eklenince camera-ready'e tamamlanacak.
+
+| Kol | İngilizce | Türkçe | Not |
+|---|---|---|---|
+| **A — Forward (FNO)** | [abstract_a_en.pdf](reports/abstract_a_en.pdf) | [abstract_a_tr.pdf](reports/abstract_a_tr.pdf) | Klinik motivasyon + k-Wave wallclock kıyası + veri seti gerekçesi + omurga ablasyon novelty |
+| **B — Inverse (3-DOF)** | [abstract_b_en.pdf](reports/abstract_b_en.pdf) | [abstract_b_tr.pdf](reports/abstract_b_tr.pdf) | Gauge-aware reformulation + örnek-verimlilik + 5° kuantizasyon · gold-standard kıyas yer tutucu |
+| _(legacy birleşik)_ | [abstract_en.pdf](reports/abstract_en.pdf) | [abstract_tr.pdf](reports/abstract_tr.pdf) | Pazartesi'ye kadar referans amaçlı |
+
+- **Ana görsel rapor**: [`reports/sonuclar.pdf`](reports/sonuclar.pdf)
+- **Toplantı hazırlık dokümanları**:
+  - [`reports/physics_first_brief.md`](reports/physics_first_brief.md) — fizik perspektifinden anlatım
+  - [`reports/inputs_and_normalization.md`](reports/inputs_and_normalization.md) — model girdi/çıktı tam spesifikasyonu
+  - [`reports/literature_notes.md`](reports/literature_notes.md) — danışmanın paylaştığı IEEE referansları
+- Teslim paketi: `sent.zip` (`scripts/build_sent_bundle.py` ile yeniden üretilir)
 
 ## Sıkça Sorulan Sorular
 

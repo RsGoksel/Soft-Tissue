@@ -61,5 +61,4 @@ system_map.md
 Developments.md
 
 # Abstract sources kept local for rebuild; repo only ships the PDFs
-reports/abstract_en.md
-reports/abstract_tr.md
+reports/abstract_*.md
